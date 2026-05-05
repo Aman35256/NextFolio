@@ -1,227 +1,247 @@
 # NextFolio
 
-A full-stack SaaS platform for building professional portfolios, ATS-optimized resumes, and interactive CLI-style terminal portfolios — powered by AI.
+NextFolio is a full-stack resume and portfolio builder. It lets authenticated users upload a resume, extract structured profile data, edit that data in a focused builder, preview an ATS-style resume and web portfolio, score the resume, generate a PDF, and publish a local share link.
 
----
+Live deployment: https://next-folio-silk.vercel.app/
 
-## ✨ Features
+## Features
 
-- **Resume Builder** — Form-driven editor for personal info, experience, education, skills, projects, achievements & certifications with real-time preview
-- **AI Resume Parser** — Upload a PDF resume and auto-extract structured data via a Python NLP service
-- **ATS Scoring** — Score resumes against job descriptions for Applicant Tracking System compatibility
-- **Bio Optimizer** — AI-powered professional summary generation (OpenAI GPT integration)
-- **Keyword Optimizer** — Compare resume skills against a target job description and surface missing keywords
-- **Portfolio Generator** — Modern and Minimal theme options with live preview, social links, and project showcase
-- **CLI Portfolio** — An interactive terminal-style portfolio rendered as a React component, driven by Zustand store data
-- **PDF Export** — Server-side Puppeteer rendering of ATS-friendly, LaTeX-inspired PDF resumes
-- **Design Panel** — Customize themes, color palettes, and layout styles on the fly
-- **Authentication** — JWT-based auth with Google OAuth sign-in support
-- **Publish & Share** — Publish portfolios to a unique shareable URL
+- Resume upload and parsing for PDF/text content through Node and Python helper scripts.
+- Login, signup, email OTP, and Google OAuth authentication.
+- Form-based resume editing for personal info, bio, skills, education, experience, projects, achievements, and certifications.
+- Real-time preview modes for an ATS resume and a web portfolio.
+- Portfolio themes including modern, minimal/default, and CLI-style terminal views.
+- Design controls for theme, color palette, and layout style.
+- ATS score analysis with actionable improvement suggestions.
+- Keyword comparison against a target job description.
+- AI-assisted bio optimization with an OpenAI-backed path when `OPENAI_API_KEY` is configured, plus local fallback behavior.
+- PDF generation for an ATS-friendly resume through Puppeteer.
+- Local portfolio publishing to `/portfolio/:slug` using browser storage.
+- Vercel deployment setup with API rewrites to the Express server handler.
 
----
-
-## 🛠️ Tech Stack
+## Tech Stack
 
 ### Frontend
-| Layer | Technology |
-|---|---|
-| Framework | React 19 + Vite 8 |
-| Styling | Tailwind CSS 3 |
-| State Management | Zustand 5 |
+
+| Area | Technology |
+| --- | --- |
+| App framework | React 19, Vite 8 |
+| Routing | React Router 7 |
+| Styling | Tailwind CSS 3, custom CSS |
+| State | Zustand |
 | Forms | React Hook Form |
 | Icons | Lucide React |
-| Auth | `@react-oauth/google` |
-| Routing | React Router 7 |
+| Auth UI | `@react-oauth/google` |
 
 ### Backend
-| Layer | Technology |
-|---|---|
-| Runtime | Node.js (ESM) |
-| Framework | Express 4 |
-| Database | SQLite 3 (via Sequelize ORM) |
-| Auth | JWT + bcryptjs |
-| File Upload | Multer |
-| PDF Parsing | pdf-parse |
-| PDF Generation | Puppeteer |
-| Email (OTP) | Resend |
 
-### AI / ML Services (Python)
-| Service | Purpose |
-|---|---|
-| `ai_parser.py` | NLP-based resume data extraction |
-| `ats_scorer.py` | ATS compatibility scoring |
-| `bio_optimizer.py` | Professional bio generation (OpenAI) |
-| `keyword_optimizer.py` | Missing keyword detection |
+| Area | Technology |
+| --- | --- |
+| Runtime | Node.js with ESM |
+| API | Express 4 |
+| Database | SQLite with Sequelize |
+| Auth | JWT, bcryptjs, Google userinfo API |
+| Uploads | Multer, pdf-parse |
+| PDF export | Puppeteer |
+| OTP email | Resend API |
+| Serverless entry | `api/index.mjs` exporting `server/server.js` |
 
----
+### Python Services
 
-## 📁 Project Structure
+The server starts these scripts as child processes when needed:
 
-```
+| File | Purpose |
+| --- | --- |
+| `server/services/ai_parser.py` | Extracts resume sections and normalizes parsed data |
+| `server/services/ats_scorer.py` | Calculates ATS score and recommendations |
+| `server/services/keyword_optimizer.py` | Finds missing job-description keywords |
+| `server/services/bio_optimizer.py` | Optimizes professional summaries |
+
+## Project Structure
+
+```text
 NextFolio/
-├── client/                        # Frontend (React + Vite)
-│   ├── src/
-│   │   ├── components/            # Reusable UI (Button, Card, Input, Modals…)
-│   │   ├── features/              # Feature modules
-│   │   │   ├── ResumeBuilder.jsx  # Main resume editor
-│   │   │   ├── ResumePreview.jsx  # Live resume preview
-│   │   │   ├── PortfolioPreview.jsx
-│   │   │   ├── CLIPortfolio.jsx   # Terminal portfolio (React)
-│   │   │   ├── AIAssistant.jsx    # AI sidebar panel
-│   │   │   ├── DesignPanel.jsx    # Theme/layout customizer
-│   │   │   └── themes/            # Portfolio & resume theme tokens
-│   │   ├── pages/                 # Route pages (Login, About, Contact, Published)
-│   │   ├── layouts/               # App shell layout
-│   │   ├── store/                 # Zustand stores (resume + UI state)
-│   │   ├── Login/                 # Login components
-│   │   ├── NavBar/                # Navigation bar
-│   │   ├── Sidebar/               # Sidebar navigation
-│   │   └── utils/                 # Helpers
-│   ├── public/                    # Static assets
-│   ├── .env.example               # Client env template
-│   └── package.json
-├── server/                        # Backend (Express + SQLite)
-│   ├── server.js                  # Entry point
-│   ├── models/                    # Sequelize models
-│   ├── routes/                    # API route handlers
-│   │   ├── auth.js                # /api/auth — signup, login, Google OAuth
-│   │   ├── resume.js              # /api/resume — CRUD resume data
-│   │   ├── ai.js                  # /api/ai — parse, optimize, score
-│   │   ├── upload.js              # /api/upload — file upload
-│   │   └── generate.js            # /api/generate — PDF generation
-│   ├── services/                  # Python AI microservices
-│   │   ├── ai_parser.py
-│   │   ├── ats_scorer.py
-│   │   ├── bio_optimizer.py
-│   │   └── keyword_optimizer.py
-│   └── .env                       # Server env (API keys)
-├── cli-portlio/                   # Legacy static CLI portfolio shell
-│   ├── index.html
-│   ├── script.js
-│   ├── styles/
-│   ├── themes/
-│   └── chatBot/
-└── README.md
+|-- api/
+|   `-- index.mjs                 # Vercel serverless entry for the Express app
+|-- client/
+|   |-- public/                   # Static assets, CLI portfolio assets
+|   |-- src/
+|   |   |-- components/           # Shared UI components and modals
+|   |   |-- features/             # Builder, previews, AI assistant, themes
+|   |   |-- layouts/              # Main authenticated workspace
+|   |   |-- lib/                  # API, Google auth, build info helpers
+|   |   |-- pages/                # About, Contact, Login, Published portfolio
+|   |   |-- store/                # Zustand resume and UI state
+|   |   `-- main.jsx
+|   |-- package.json
+|   `-- vite.config.js
+|-- server/
+|   |-- models/                   # Sequelize models and SQLite setup
+|   |-- routes/                   # Auth, resume, AI, upload, PDF routes
+|   |-- services/                 # Python parsing/scoring/optimization scripts
+|   |-- server.js                 # Express app and serverless handler
+|   |-- database.sqlite           # Local SQLite database
+|   `-- package.json
+|-- vercel.json                   # Root Vercel build, env, headers, rewrites
+|-- package.json                  # Root dependency metadata
+`-- README.md
 ```
 
----
+## Prerequisites
 
-## 🚀 Getting Started
+- Node.js 18 or newer.
+- npm.
+- Python 3 available as `python` on your PATH.
+- Google OAuth credentials if Google login is enabled.
+- Optional: OpenAI API key for stronger bio generation.
+- Optional: Resend API key and verified sender for production OTP email.
 
-### Prerequisites
+## Environment Variables
 
-- **Node.js** v18+
-- **Python** 3.8+ (for AI services)
-- **npm**
+Create local environment files as needed. The repo ignores `.env` files.
 
-### 1. Clone the repository
+### Server: `server/.env`
 
-```bash
-git clone https://github.com/Rishi472/NextFolio.git
-cd NextFolio
+```env
+PORT=5000
+JWT_SECRET=replace_with_a_strong_secret
+OPENAI_API_KEY=optional_openai_key
+RESEND_API_KEY=optional_resend_key
+OTP_FROM_EMAIL=onboarding@resend.dev
 ```
 
-### 2. Install dependencies
+Notes:
+
+- `JWT_SECRET` falls back to a development default if omitted, but production should always set it.
+- OTP codes are logged in non-production when Resend is not configured.
+- `OPENAI_API_KEY` is optional. Without it, `bio_optimizer.py` uses local fallback text generation.
+
+### Client: `client/.env`
+
+```env
+VITE_API_URL=http://localhost:5000
+VITE_GOOGLE_CLIENT_ID=your_google_oauth_client_id
+VITE_ENABLE_GOOGLE_LOGIN=true
+VITE_APP_VERSION=local
+```
+
+Notes:
+
+- The frontend appends `/api` automatically, so both `http://localhost:5000` and `http://localhost:5000/api` are accepted.
+- In production, Google login is only enabled when `VITE_ENABLE_GOOGLE_LOGIN=true` and a usable client ID is present.
+
+## Local Setup
+
+Install backend and frontend dependencies:
 
 ```bash
-# Server
 cd server
 npm install
 
-# Client
 cd ../client
 npm install
 ```
 
-### 3. Configure environment variables
-
-**Server** (`server/.env`):
-```env
-OPENAI_API_KEY=your_openai_api_key
-RESEND_API_KEY=re_your_resend_key
-OTP_FROM_EMAIL=onboarding@resend.dev
-```
-
-**Client** (`client/.env`):
-```env
-VITE_API_URL=http://localhost:5000
-VITE_GOOGLE_CLIENT_ID=your_google_client_id
-```
-
-### 4. Run the application
-
-Open **two terminals**:
+Run the app in two terminals:
 
 ```bash
-# Terminal 1 — Start the backend
 cd server
-npm start            # or: npm run dev
+npm run dev
+```
 
-# Terminal 2 — Start the frontend
+```bash
 cd client
 npm run dev
 ```
 
-The local app will be available at **http://localhost:5173**.
-The deployed app is available at **https://next-folio-silk.vercel.app/**.
+Open http://localhost:5173.
 
----
+The client defaults to `http://localhost:5000/api` during development when `VITE_API_URL` is not set.
 
-## 📡 API Routes
+## Available Scripts
 
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| POST | `/api/auth/signup` | Register a new user |
-| POST | `/api/auth/login` | Login with email & password |
-| POST | `/api/auth/google` | Google OAuth sign-in |
-| GET/PUT | `/api/resume/personal` | Read/update personal info |
-| POST | `/api/ai/parse` | Upload & parse a resume PDF |
-| POST | `/api/ai/optimize` | Keyword optimization against a JD |
-| POST | `/api/ai/optimize-bio` | AI-generated professional summary |
-| POST | `/api/ai/ats-score` | ATS compatibility score |
-| POST | `/api/upload` | Generic file upload |
-| POST | `/api/generate/pdf` | Generate ATS-friendly PDF resume |
+### Client
 
----
+```bash
+cd client
+npm run dev       # Start Vite
+npm run build     # Create production build
+npm run preview   # Preview production build
+npm run lint      # Run ESLint
+```
 
-## 🎨 Themes & Customization
+### Server
 
-NextFolio ships with multiple customization layers:
+```bash
+cd server
+npm start         # Start Express
+npm run dev       # Start Express, same command as start
+```
 
-- **Portfolio Themes** — Modern (gradient, glassmorphism) and Minimal (clean, typography-focused)
-- **Color Palettes** — Blue, Purple, Green, and more via design tokens
-- **Layout Styles** — Default, Compact, and other layout presets
-- **Resume Styles** — LaTeX-inspired ATS-friendly PDF output
+## API Overview
 
-All theming is token-driven via `features/themes/` — palette colors, layout spacing, and typography are fully configurable.
+All routes are mounted under `/api`.
 
----
+| Method | Endpoint | Auth | Description |
+| --- | --- | --- | --- |
+| POST | `/auth/signup` | No | Create account with name, email, and password |
+| POST | `/auth/login` | No | Login with email and password |
+| POST | `/auth/otp/request` | No | Request login/signup OTP |
+| POST | `/auth/otp/verify` | No | Verify OTP and return JWT auth payload |
+| POST | `/auth/google` | No | Login/signup from a Google access token |
+| GET | `/resume` | Yes | Fetch the current user's resume data |
+| PUT | `/resume/personal` | Yes | Save personal information |
+| PUT | `/resume/config` | Yes | Save theme, color palette, and layout style |
+| POST | `/resume/experience` | Yes | Add experience |
+| PUT | `/resume/experience/:id` | Yes | Update experience |
+| DELETE | `/resume/experience/:id` | Yes | Delete experience |
+| POST | `/resume/education` | Yes | Add education |
+| DELETE | `/resume/education/:id` | Yes | Delete education |
+| POST | `/resume/project` | Yes | Add project |
+| DELETE | `/resume/project/:id` | Yes | Delete project |
+| POST | `/resume/skill` | Yes | Add skill |
+| DELETE | `/resume/skill/:id` | Yes | Delete skill |
+| POST | `/ai/parse` | Yes | Upload and parse resume file |
+| POST | `/ai/ats-score` | Yes | Score resume data |
+| POST | `/ai/optimize` | Yes | Find missing keywords from a job description |
+| POST | `/ai/optimize-bio` | Yes | Optimize professional summary |
+| POST | `/upload/parse-resume` | No | Alternate parser endpoint for PDF/text upload |
+| POST | `/upload/save-resume-data` | Yes | Persist parsed resume sections |
+| GET | `/upload/resume-status` | Yes | Check which resume sections exist |
+| POST | `/generate/ats-resume` | Yes | Generate ATS resume PDF |
 
-## 🤝 Contributing
+Authenticated requests use:
 
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+```http
+Authorization: Bearer <token>
+```
 
----
+## Deployment
 
-## 📝 License
+The root `vercel.json` is configured for Vercel:
 
-This project is licensed under the MIT License.
+- Installs root, client, and server dependencies.
+- Builds the frontend from `client`.
+- Serves `client/dist`.
+- Rewrites `/api/*` to `api/index.mjs`.
+- Rewrites all other routes to the frontend `index.html`.
 
----
+Before deploying, set production environment variables in Vercel instead of committing secrets. At minimum, configure `JWT_SECRET`, `VITE_API_URL`, and Google OAuth values if Google login is enabled.
 
-## 🎯 Roadmap
+## Notes for Development
 
-- [ ] Real-time collaboration
-- [ ] Additional portfolio themes
-- [ ] Mobile-responsive editor
-- [ ] Analytics dashboard for published portfolios
-- [ ] Video portfolio support
-- [ ] Custom domain mapping for published portfolios
+- `server/database.sqlite` is the local SQLite database used by Sequelize.
+- Uploaded resume parsing currently supports PDF and text extraction paths; the main client upload accepts `.pdf` and `.docx`, but the parser treats non-PDF content as UTF-8 text.
+- The main editor currently auto-saves personal information to the API; other sections live in client state unless saved through their dedicated routes or upload flow.
+- Portfolio publishing stores data in localStorage under the generated slug, so links are browser-local rather than globally hosted records.
 
----
+## Documentation
 
-**Built with ❤️ by the NextFolio Team**
+Additional project notes live in:
+
+- `ARCHITECTURE.md`
+- `DEPLOYMENT_GUIDE.md`
+- `DOCUMENTATION_INDEX.md`
+- `COMPLETION_SUMMARY.md`
+- `client/src/COMPONENT_GUIDE.md`
+- `client/src/STYLING_GUIDE.md`
