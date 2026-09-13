@@ -18,6 +18,15 @@ const getCurrentOrigin = () => (
   typeof window === 'undefined' ? productionOrigin : window.location.origin
 );
 
+export const getGoogleOAuthRedirectOrigin = () => {
+  const currentOrigin = getCurrentOrigin();
+  if (currentOrigin !== productionOrigin && currentOrigin.endsWith('.vercel.app')) {
+    return productionOrigin;
+  }
+
+  return '';
+};
+
 export const getGoogleLoginPreflightError = () => {
   if (!HAS_GOOGLE_OAUTH) return 'Google sign-in is disabled for this environment.';
 

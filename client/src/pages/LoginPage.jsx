@@ -7,7 +7,12 @@ import Button from '../components/Button';
 import Input from '../components/Input';
 import logo from '../assets/NextFolioLogo.png';
 import { API_URL, getApiErrorMessage } from '../lib/api';
-import { HAS_GOOGLE_OAUTH, getGoogleAuthErrorMessage, getGoogleLoginPreflightError } from '../lib/googleAuth';
+import {
+  HAS_GOOGLE_OAUTH,
+  getGoogleAuthErrorMessage,
+  getGoogleLoginPreflightError,
+  getGoogleOAuthRedirectOrigin
+} from '../lib/googleAuth';
 
 export default function LoginPage() {
   const navigate = useNavigate();
@@ -131,6 +136,12 @@ export default function LoginPage() {
   });
 
   const startGoogleLogin = () => {
+    const redirectOrigin = getGoogleOAuthRedirectOrigin();
+    if (redirectOrigin) {
+      window.location.assign(`${redirectOrigin}${window.location.pathname}${window.location.search}`);
+      return;
+    }
+
     const preflightError = getGoogleLoginPreflightError();
     if (preflightError) {
       setError(preflightError);

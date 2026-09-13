@@ -5,7 +5,12 @@ import { useUIStore, useResumeStore } from '../store';
 import Button from './Button';
 import Input from './Input';
 import { API_URL, getApiErrorMessage } from '../lib/api';
-import { HAS_GOOGLE_OAUTH, getGoogleAuthErrorMessage, getGoogleLoginPreflightError } from '../lib/googleAuth';
+import {
+  HAS_GOOGLE_OAUTH,
+  getGoogleAuthErrorMessage,
+  getGoogleLoginPreflightError,
+  getGoogleOAuthRedirectOrigin
+} from '../lib/googleAuth';
 
 export default function AuthModal() {
   const { showAuthModal, setShowAuthModal } = useUIStore();
@@ -126,6 +131,12 @@ export default function AuthModal() {
   });
 
   const startGoogleLogin = () => {
+    const redirectOrigin = getGoogleOAuthRedirectOrigin();
+    if (redirectOrigin) {
+      window.location.assign(`${redirectOrigin}${window.location.pathname}${window.location.search}`);
+      return;
+    }
+
     const preflightError = getGoogleLoginPreflightError();
     if (preflightError) {
       setError(preflightError);
