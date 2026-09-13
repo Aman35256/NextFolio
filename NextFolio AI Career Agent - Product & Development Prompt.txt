@@ -1,0 +1,539 @@
+NextFolio AI Career Agent - Product &
+Development Prompt
+Build a new module inside NextFolio called AI Career Agent.
+
+
+IMPORTANT:
+
+
+     • Keep the entire frontend design system, color palette, typography, navigation, dashboard layout,
+       responsiveness, animations, and user experience identical to the existing NextFolio platform.
+     • This is an enhancement to NextFolio, not a separate application.
+     • The new feature must seamlessly integrate into the current architecture.
+
+
+Vision
+Create a fully autonomous AI-powered career agent that continuously searches, evaluates, applies, tracks,
+and manages job opportunities worldwide on behalf of the user.
+
+
+The user should only upload their resume once and configure preferences. After that, AI agents handle the
+complete job-hunting lifecycle.
+
+
+
+
+New Dashboard Section
+Add a sidebar item:
+
+
+AI Career Agent
+
+
+Subsections:
+
+
+    1. Resume Intelligence
+    2. Job Discovery
+    3. Job Matches
+    4. Auto Apply
+    5. Applications
+    6. Interview Prep
+    7. Notifications
+    8. Offer Analysis
+    9. Agent Settings
+
+
+
+
+                                                     1
+Resume Intelligence Agent
+When a user uploads a resume:
+
+
+Extract:
+
+
+      • Name
+      • Education
+      • Skills
+      • Certifications
+      • Projects
+      • Experience
+      • Preferred locations
+      • Preferred industries
+      • Salary expectations
+
+Generate:
+
+
+      • Structured candidate profile
+      • Skills graph
+      • Experience summary
+      • ATS score
+      • Missing skills recommendations
+
+Display results in modern cards matching existing NextFolio UI.
+
+
+
+
+Global Job Discovery Agent
+Create an autonomous job crawler system.
+
+
+Sources:
+
+
+      • LinkedIn Jobs
+      • Indeed
+      • Wellfound
+      • Glassdoor
+      • Naukri
+      • Foundit
+      • Company career pages
+      • Startup job boards
+      • International job portals
+
+Agent responsibilities:
+
+
+      • Discover new jobs every few hours
+
+
+
+
+                                                     2
+      • Remove duplicates
+      • Extract job metadata
+      • Normalize job descriptions
+      • Store opportunities
+
+Fields:
+
+
+      • Company
+      • Role
+      • Location
+      • Salary
+      • Experience required
+      • Remote status
+      • Visa sponsorship
+      • Apply URL
+      • Job description
+
+
+
+
+Job Matching Agent
+Use AI scoring.
+
+
+Evaluate:
+
+
+      • Skills match
+      • Project relevance
+      • Education relevance
+      • Experience relevance
+      • Salary fit
+      • Location preference
+      • Industry preference
+
+Generate:
+
+
+Match Score (0-100)
+
+
+Show:
+
+
+92% Match 87% Match 75% Match
+
+
+Include explainability:
+
+
+Why this role matches: ✓ Java ✓ Spring Boot ✓ AWS ✓ Relevant Project Experience
+
+
+
+
+                                                    3
+Auto Apply Agent
+Allow user to configure rules.
+
+
+Examples:
+
+
+Apply automatically when:
+
+
+Match Score > 85
+
+
+Salary > $50,000
+
+
+Remote = True
+
+
+Country = Any
+
+
+or
+
+
+Require Approval Before Submission
+
+
+Workflow:
+
+
+     1. Open application page
+     2. Fill forms
+     3. Upload resume
+     4. Upload cover letter
+     5. Fill screening questions
+     6. Submit application
+
+Maintain audit logs.
+
+
+Store:
+
+
+      • Timestamp
+      • Job ID
+      • Company
+      • Submission status
+
+
+
+
+AI Cover Letter Agent
+Generate personalized cover letters.
+
+
+
+
+                                       4
+Inputs:
+
+
+      • Resume
+      • Job description
+      • Company details
+
+Output:
+
+
+Custom cover letter Custom introduction Custom application responses
+
+
+Never use generic templates.
+
+
+
+
+Application Tracking Agent
+Track application lifecycle.
+
+
+Statuses:
+
+
+Applied Viewed Under Review Assessment Interview Scheduled Interview Completed Offer Received
+Rejected
+
+
+Timeline UI:
+
+
+Application Submitted ↓ Under Review ↓ Interview Scheduled ↓ Offer Received
+
+
+
+
+Hiring Notification Agent
+Monitor:
+
+
+      • Email updates
+      • ATS systems
+      • Company career portals
+
+Notify users immediately when:
+
+
+      • Application viewed
+      • Assessment assigned
+      • Interview scheduled
+      • Offer received
+      • Rejected
+
+
+
+
+                                                  5
+Notification channels:
+
+
+        • In-app
+        • Email
+        • Push notification
+
+
+
+
+Interview Preparation Agent
+When interview is detected:
+
+
+Automatically analyze:
+
+
+        • Company
+        • Role
+        • Job description
+        • Required skills
+
+Generate:
+
+
+        • Technical questions
+        • HR questions
+        • System design questions
+        • Coding challenges
+        • Mock interview simulations
+
+Provide AI interview practice.
+
+
+
+
+Networking Agent
+Find:
+
+
+        • Recruiters
+        • Hiring managers
+        • Alumni
+
+Generate:
+
+
+        • Cold outreach messages
+        • Referral requests
+        • Follow-up messages
+
+Store communication history.
+
+
+
+
+                                       6
+Offer Evaluation Agent
+When offer received:
+
+
+Analyze:
+
+
+     • Salary
+     • Taxes
+     • Cost of living
+     • Benefits
+     • Equity
+     • Bonuses
+
+Generate:
+
+
+Offer Score
+
+
+Pros Cons
+
+
+Market comparison
+
+
+Negotiation suggestions
+
+
+
+
+Agentic Architecture
+Implement multi-agent orchestration.
+
+
+Agents:
+
+
+    1. Resume Agent
+    2. Job Discovery Agent
+    3. Matching Agent
+    4. Auto Apply Agent
+    5. Cover Letter Agent
+    6. Tracking Agent
+    7. Notification Agent
+    8. Interview Agent
+    9. Networking Agent
+   10. Offer Evaluation Agent
+
+Use event-driven architecture.
+
+
+Example:
+
+
+
+
+                                       7
+New Resume Uploaded → Resume Agent
+
+
+Resume Processed → Discovery Agent
+
+
+New Job Found → Matching Agent
+
+
+High Match Score → Auto Apply Agent
+
+
+Application Submitted → Tracking Agent
+
+
+Status Changed → Notification Agent
+
+
+Interview Scheduled → Interview Agent
+
+
+Offer Received → Offer Evaluation Agent
+
+
+
+
+AI Features
+Use LLMs for:
+
+
+     • Resume understanding
+     • Skill extraction
+     • Job matching
+     • Cover letter generation
+     • Application responses
+     • Interview preparation
+     • Offer analysis
+
+Include memory layer:
+
+
+The AI should learn:
+
+
+     • Preferred roles
+     • Preferred locations
+     • Preferred industries
+     • Preferred companies
+     • Application history
+
+
+
+
+Analytics Dashboard
+Show:
+
+
+
+
+                                          8
+Applications Submitted
+
+
+Interviews Received
+
+
+Offers Received
+
+
+Acceptance Rate
+
+
+Top Matching Skills
+
+
+Most Active Regions
+
+
+Application Success Rate
+
+
+Use charts and KPI cards matching current NextFolio design.
+
+
+
+
+Tech Stack
+Frontend:
+
+
+      • Next.js
+      • TypeScript
+      • Tailwind CSS
+      • ShadCN UI
+
+Backend:
+
+
+      • FastAPI or NestJS
+
+Database:
+
+
+      • PostgreSQL
+
+Vector Database:
+
+
+      • Pinecone or Weaviate
+
+Queue:
+
+
+      • Redis + BullMQ
+
+AI:
+
+
+      • OpenAI
+      • Gemini
+      • Claude
+
+
+
+                                                    9
+Authentication:
+
+
+     • Existing NextFolio Auth System
+
+
+
+
+Final Goal
+Transform NextFolio from a portfolio platform into an AI-powered Career Operating System where users
+upload their resume once and autonomous AI agents continuously discover opportunities, apply for jobs,
+track progress, prepare interviews, and assist with offer decisions with minimal user intervention while
+preserving the current NextFolio frontend experience.
+
+
+
+
+                                                    10
+

@@ -8,9 +8,6 @@ import TerminalPreview from '../features/TerminalPreview';
 import PortfolioThemeModern from '../features/themes/PortfolioThemeModern';
 import DesignPanel from '../features/DesignPanel';
 import TopNavbar from '../components/TopNavbar';
-import ATSModal from '../components/ATSModal';
-import AuthModal from '../components/AuthModal';
-import PublishModal from '../components/PublishModal';
 import Button from '../components/Button';
 import { APP_VERSION } from '../lib/buildInfo';
 
@@ -243,9 +240,6 @@ export default function MainLayout() {
           </div>
         </div>
       )}
-      <ATSModal />
-      <AuthModal />
-      <PublishModal />
     </div>
   );
 }

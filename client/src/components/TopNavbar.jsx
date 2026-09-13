@@ -1,6 +1,6 @@
 import { useUIStore, useResumeStore } from '../store';
 import Button from './Button';
-import { Download, LogOut, Globe } from 'lucide-react';
+import { Download, LogOut, Globe, Home } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import logo from '../assets/NextFolioLogo.png';
 
@@ -13,7 +13,12 @@ export default function TopNavbar() {
   return (
     <div className="h-16 bg-gradient-brand flex items-center justify-between px-6 shadow-md z-50">
       {/* Left: Logo */}
-      <div className="group relative flex items-center" tabIndex={0} aria-label="NextFolio logo">
+      <div 
+        className="group relative flex items-center cursor-pointer" 
+        onClick={() => navigate('/')}
+        tabIndex={0} 
+        aria-label="NextFolio logo"
+      >
         <img
           src={logo}
           alt="Nextfolio"
@@ -28,22 +33,47 @@ export default function TopNavbar() {
       <div className="hidden md:flex items-center gap-4">
         <button
           type="button"
+          onClick={() => navigate('/')}
+          className="text-white/80 hover:text-white font-medium px-4 py-2 rounded-full hover:bg-white/10 transition-colors flex items-center gap-2 text-sm"
+        >
+          <Home className="w-4 h-4" /> Home
+        </button>
+        {isAuthenticated && (
+          <>
+            <button
+              type="button"
+              onClick={() => navigate('/career-agent')}
+              className="text-white/80 hover:text-white font-medium px-4 py-2 rounded-full hover:bg-white/10 transition-colors flex items-center gap-2 text-sm"
+            >
+              🤖 AI Career Agent
+            </button>
+            <button
+              type="button"
+              onClick={() => navigate('/knowledge-map')}
+              className="text-white/80 hover:text-white font-medium px-4 py-2 rounded-full hover:bg-white/10 transition-colors flex items-center gap-2 text-sm"
+            >
+              🗺️ Knowledge Map
+            </button>
+          </>
+        )}
+        <button
+          type="button"
           onClick={() => navigate('/about')}
-          className="text-white/80 hover:text-white font-medium px-4 py-2 rounded-full hover:bg-white/10 transition-colors"
+          className="text-white/80 hover:text-white font-medium px-4 py-2 rounded-full hover:bg-white/10 transition-colors text-sm"
         >
           About
         </button>
         <button
           type="button"
           onClick={() => navigate('/contact')}
-          className="text-white/80 hover:text-white font-medium px-4 py-2 rounded-full hover:bg-white/10 transition-colors"
+          className="text-white/80 hover:text-white font-medium px-4 py-2 rounded-full hover:bg-white/10 transition-colors text-sm"
         >
           Contact
         </button>
         {!isAuthenticated && (
           <button 
             onClick={() => navigate('/login')}
-            className="bg-white/10 text-white font-medium px-6 py-2 rounded-full hover:bg-white/20 transition-colors border border-white/20"
+            className="bg-white/10 text-white font-medium px-6 py-2 rounded-full hover:bg-white/20 transition-colors border border-white/20 text-sm"
           >
             Log In / Sign Up
           </button>

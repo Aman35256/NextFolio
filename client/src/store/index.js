@@ -1,6 +1,17 @@
 import { create } from 'zustand';
 import { API_URL } from '../lib/api';
 
+export { useCareerAgentStore } from './careerAgent';
+
+export const authFetch = async (url, options = {}) => {
+  const response = await fetch(url, options);
+  if (response.status === 401) {
+    useResumeStore.getState().logout();
+    throw new Error('Your session has expired. Please log in again.');
+  }
+  return response;
+};
+
 const readStoredJson = (key) => {
   try {
     const value = localStorage.getItem(key);
@@ -153,55 +164,65 @@ export const useResumeStore = create((set, get) => ({
     else localStorage.removeItem('nextfolio_token');
     writeStoredJson('nextfolio_user', user);
     set({ token: token || null, user: user || null });
+    if (token && user) {
+      get().fetchResume(token);
+    }
   },
   logout: () => {
     localStorage.removeItem('nextfolio_token');
     localStorage.removeItem('nextfolio_user');
-    set({ token: null, user: null });
+    set({ token: null, user: null, atsAnalysis: null, atsScore: null });
   },
   
-  resumeData: emptyResumeData,
+  resumeData: readStoredJson('nextfolio_resume_data') || emptyResumeData,
 
-  setResumeData: (data) => set({ resumeData: data }),
+  setResumeDataState: (updater) => {
+    const current = get().resumeData;
+    const next = typeof updater === 'function' ? updater(current) : updater;
+    writeStoredJson('nextfolio_resume_data', next);
+    set({ resumeData: next });
+  },
+
+  setResumeData: (data) => get().setResumeDataState(data),
   
-  updatePersonal: (personal) => set((state) => ({ resumeData: { ...state.resumeData, personal } })),
-  addExperience: (experience) => set((state) => ({ resumeData: { ...state.resumeData, experience: [...state.resumeData.experience, experience] } })),
-  updateExperience: (index, experience) => set((state) => {
-    const newExperience = [...state.resumeData.experience];
+  updatePersonal: (personal) => get().setResumeDataState((prev) => ({ ...prev, personal })),
+  addExperience: (experience) => get().setResumeDataState((prev) => ({ ...prev, experience: [...prev.experience, experience] })),
+  updateExperience: (index, experience) => get().setResumeDataState((prev) => {
+    const newExperience = [...prev.experience];
     newExperience[index] = experience;
-    return { resumeData: { ...state.resumeData, experience: newExperience } };
+    return { ...prev, experience: newExperience };
   }),
-  removeExperience: (index) => set((state) => ({ resumeData: { ...state.resumeData, experience: state.resumeData.experience.filter((_, i) => i !== index) } })),
-  addEducation: (education) => set((state) => ({ resumeData: { ...state.resumeData, education: [...state.resumeData.education, education] } })),
-  updateEducation: (index, education) => set((state) => {
-    const newEducation = [...state.resumeData.education];
+  removeExperience: (index) => get().setResumeDataState((prev) => ({ ...prev, experience: prev.experience.filter((_, i) => i !== index) })),
+  addEducation: (education) => get().setResumeDataState((prev) => ({ ...prev, education: [...prev.education, education] })),
+  updateEducation: (index, education) => get().setResumeDataState((prev) => {
+    const newEducation = [...prev.education];
     newEducation[index] = education;
-    return { resumeData: { ...state.resumeData, education: newEducation } };
+    return { ...prev, education: newEducation };
   }),
-  removeEducation: (index) => set((state) => ({ resumeData: { ...state.resumeData, education: state.resumeData.education.filter((_, i) => i !== index) } })),
-  addSkill: (skill) => set((state) => ({ resumeData: { ...state.resumeData, skills: [...state.resumeData.skills, skill] } })),
-  removeSkill: (index) => set((state) => ({ resumeData: { ...state.resumeData, skills: state.resumeData.skills.filter((_, i) => i !== index) } })),
-  addProject: (project) => set((state) => ({ resumeData: { ...state.resumeData, projects: [...state.resumeData.projects, project] } })),
-  updateProject: (index, project) => set((state) => {
-    const newProjects = [...state.resumeData.projects];
+  removeEducation: (index) => get().setResumeDataState((prev) => ({ ...prev, education: prev.education.filter((_, i) => i !== index) })),
+  addSkill: (skill) => get().setResumeDataState((prev) => ({ ...prev, skills: [...prev.skills, skill] })),
+  removeSkill: (index) => get().setResumeDataState((prev) => ({ ...prev, skills: prev.skills.filter((_, i) => i !== index) })),
+  addProject: (project) => get().setResumeDataState((prev) => ({ ...prev, projects: [...prev.projects, project] })),
+  updateProject: (index, project) => get().setResumeDataState((prev) => {
+    const newProjects = [...prev.projects];
     newProjects[index] = project;
-    return { resumeData: { ...state.resumeData, projects: newProjects } };
+    return { ...prev, projects: newProjects };
   }),
-  removeProject: (index) => set((state) => ({ resumeData: { ...state.resumeData, projects: state.resumeData.projects.filter((_, i) => i !== index) } })),
-  addAchievement: (achievement) => set((state) => ({ resumeData: { ...state.resumeData, achievements: [...state.resumeData.achievements, achievement] } })),
-  updateAchievement: (index, achievement) => set((state) => {
-    const newAchievements = [...state.resumeData.achievements];
+  removeProject: (index) => get().setResumeDataState((prev) => ({ ...prev, projects: prev.projects.filter((_, i) => i !== index) })),
+  addAchievement: (achievement) => get().setResumeDataState((prev) => ({ ...prev, achievements: [...prev.achievements, achievement] })),
+  updateAchievement: (index, achievement) => get().setResumeDataState((prev) => {
+    const newAchievements = [...prev.achievements];
     newAchievements[index] = achievement;
-    return { resumeData: { ...state.resumeData, achievements: newAchievements } };
+    return { ...prev, achievements: newAchievements };
   }),
-  removeAchievement: (index) => set((state) => ({ resumeData: { ...state.resumeData, achievements: state.resumeData.achievements.filter((_, i) => i !== index) } })),
-  addCertification: (certification) => set((state) => ({ resumeData: { ...state.resumeData, certifications: [...state.resumeData.certifications, certification] } })),
-  updateCertification: (index, certification) => set((state) => {
-    const newCertifications = [...state.resumeData.certifications];
+  removeAchievement: (index) => get().setResumeDataState((prev) => ({ ...prev, achievements: prev.achievements.filter((_, i) => i !== index) })),
+  addCertification: (certification) => get().setResumeDataState((prev) => ({ ...prev, certifications: [...prev.certifications, certification] })),
+  updateCertification: (index, certification) => get().setResumeDataState((prev) => {
+    const newCertifications = [...prev.certifications];
     newCertifications[index] = certification;
-    return { resumeData: { ...state.resumeData, certifications: newCertifications } };
+    return { ...prev, certifications: newCertifications };
   }),
-  removeCertification: (index) => set((state) => ({ resumeData: { ...state.resumeData, certifications: state.resumeData.certifications.filter((_, i) => i !== index) } })),
+  removeCertification: (index) => get().setResumeDataState((prev) => ({ ...prev, certifications: prev.certifications.filter((_, i) => i !== index) })),
 
   // API Integration: Parse Resume
   parseResume: async (file) => {
@@ -217,7 +238,7 @@ export const useResumeStore = create((set, get) => ({
     formData.append('resume', file);
     
     try {
-      const res = await fetch(`${API_URL}/ai/parse`, {
+      const res = await authFetch(`${API_URL}/ai/parse`, {
         method: 'POST',
         headers: { Authorization: `Bearer ${token}` },
         body: formData
@@ -245,12 +266,13 @@ export const useResumeStore = create((set, get) => ({
         const parsed = result.data;
         const newResumeData = normalizeParsedResume(parsed, get().resumeData);
         console.log('Updated resume data:', newResumeData);
-        set({ resumeData: newResumeData });
+        get().setResumeDataState(newResumeData);
+        set({ atsAnalysis: null, atsScore: null });
         
         // ML Keyword Optimization
         if (targetJobDescription) {
           try {
-            const optRes = await fetch(`${API_URL}/ai/optimize`, {
+            const optRes = await authFetch(`${API_URL}/ai/optimize`, {
               method: 'POST',
               headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
               body: JSON.stringify({ skills: newResumeData.skills, targetJobDescription })
@@ -285,7 +307,7 @@ export const useResumeStore = create((set, get) => ({
     if (!token || !user) return false;
     
     try {
-      const res = await fetch(`${API_URL}/ai/optimize-bio`, {
+      const res = await authFetch(`${API_URL}/ai/optimize-bio`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({ resumeData })
@@ -304,6 +326,98 @@ export const useResumeStore = create((set, get) => ({
     }
   },
 
+  fetchResume: async (token) => {
+    try {
+      const response = await authFetch(`${API_URL}/resume`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (response.ok) {
+        const dbUser = await response.json();
+        const personal = dbUser.PersonalInfo || {};
+        
+        const experience = (dbUser.Experiences || []).map(exp => ({
+          jobTitle: exp.jobTitle || '',
+          company: exp.company || '',
+          startDate: exp.startDate || '',
+          endDate: exp.endDate || '',
+          description: exp.description || '',
+        }));
+        
+        const education = (dbUser.Educations || []).map(edu => ({
+          degree: edu.degree || '',
+          school: edu.school || '',
+          graduationDate: edu.graduationDate || '',
+          result: edu.result || '',
+        }));
+        
+        const skills = (dbUser.Skills || []).map(s => s.name || '');
+        
+        const projects = (dbUser.Projects || []).map(proj => ({
+          title: proj.title || '',
+          date: proj.date || '',
+          type: '',
+          technologies: [],
+          description: proj.description || '',
+          bulletPoints: [],
+          demoLink: proj.link || '',
+          githubLink: '',
+        }));
+
+        let certifications = [];
+        let achievements = [];
+        try {
+          const profileRes = await authFetch(`${API_URL}/career-agents/resume/profile`, {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+          if (profileRes.ok) {
+            const profileData = await profileRes.json();
+            if (profileData.profile) {
+              certifications = profileData.profile.certifications || [];
+              achievements = profileData.profile.achievements || [];
+            }
+          }
+        } catch (err) {
+          console.error('Failed to fetch candidate profile during resume sync', err);
+        }
+
+        const syncedResumeData = {
+          personal: {
+            fullName: personal.fullName || dbUser.name || '',
+            email: personal.email || dbUser.email || '',
+            phone: personal.phone || '',
+            location: personal.location || '',
+            linkedin: personal.linkedin || '',
+            github: personal.github || '',
+            summary: personal.summary || '',
+            profileImage: dbUser.profileImage || '',
+          },
+          experience,
+          education,
+          skills,
+          projects,
+          achievements,
+          certifications,
+        };
+
+        const hasDbData = Boolean(
+          personal.fullName ||
+          personal.summary ||
+          experience.length ||
+          education.length ||
+          skills.length ||
+          projects.length
+        );
+
+        if (hasDbData) {
+          writeStoredJson('nextfolio_resume_data', syncedResumeData);
+          set({ resumeData: syncedResumeData });
+        }
+      }
+    } catch (err) {
+      console.error('Failed to fetch resume from database', err);
+    }
+  },
+
   // API Integration: Save to DB
   saveToDatabase: async () => {
     let { token, user, resumeData } = get();
@@ -311,19 +425,96 @@ export const useResumeStore = create((set, get) => ({
     
     set({ isSaving: true });
     try {
-      // Save personal info
-      await fetch(`${API_URL}/resume/personal`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-        body: JSON.stringify(resumeData.personal)
+      const skillsObjects = resumeData.skills.map(skillName => ({
+        name: skillName,
+        category: 'General'
+      }));
+
+      const projectsPayload = resumeData.projects.map(proj => ({
+        title: proj.title || '',
+        description: proj.description || '',
+        link: proj.demoLink || proj.githubLink || '',
+        date: proj.date || '',
+      }));
+
+      const response = await authFetch(`${API_URL}/upload/save-resume-data`, {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json', 
+          Authorization: `Bearer ${token}` 
+        },
+        body: JSON.stringify({
+          personalInfo: resumeData.personal,
+          experience: resumeData.experience,
+          education: resumeData.education,
+          skills: skillsObjects,
+          projects: projectsPayload
+        })
       });
-      // We would also save experience, education, etc. recursively here in a real app
-      // For brevity, we just simulate the API success
-      setTimeout(() => set({ isSaving: false }), 500);
+
+      if (response.ok) {
+        set({ atsAnalysis: null, atsScore: null });
+        try {
+          await authFetch(`${API_URL}/career-agents/resume/analyze`, {
+            method: 'POST',
+            headers: { 
+              'Content-Type': 'application/json', 
+              Authorization: `Bearer ${token}` 
+            },
+            body: JSON.stringify({
+              resumeData: resumeData
+            })
+          });
+        } catch (profileErr) {
+          console.error("Failed to auto-update candidate profile on save", profileErr);
+        }
+      }
+
+      set({ isSaving: false });
     } catch (e) {
       set({ isSaving: false });
       console.error("Save error", e);
     }
+  },
+
+  atsScore: null,
+  atsAnalysis: null,
+  isLoadingATS: false,
+  fetchATSScore: async () => {
+    const { token, atsAnalysis, resumeData } = get();
+    if (!token) return;
+
+    if (atsAnalysis !== null && atsAnalysis !== undefined) {
+      return;
+    }
+
+    set({ isLoadingATS: true });
+    try {
+      const res = await fetch(`${API_URL}/ai/ats-score`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({ resumeData })
+      });
+      if (res.ok) {
+        const result = await res.json();
+        set({
+          atsAnalysis: result.data,
+          atsScore: result.data.score
+        });
+      }
+    } catch (e) {
+      console.error('Failed to fetch ATS score', e);
+    } finally {
+      set({ isLoadingATS: false });
+    }
+  },
+
+  reanalyzeATS: async () => {
+    set({ atsAnalysis: null, atsScore: null });
+    await get().fetchATSScore();
   }
 }));
 

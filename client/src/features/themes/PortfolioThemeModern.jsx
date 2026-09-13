@@ -173,10 +173,9 @@ function projectDateScore(project = {}, index = 0) {
 }
 
 function latestProject(projects = []) {
-  return projects
+  return (projects
     .map((project, index) => ({ project, score: projectDateScore(project, index) }))
-    .sort((a, b) => b.score - a.score)
-    [0]?.project;
+    .sort((a, b) => b.score - a.score))[0]?.project;
 }
 
 function AboutGrid({ resume, layoutStyle }) {

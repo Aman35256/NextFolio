@@ -29,29 +29,34 @@ const otpKey = (purpose, email) => `${purpose}:${normalizeEmail(email)}`;
 
 const sendOtp = async ({ email, otp, purpose }) => {
   if (process.env.RESEND_API_KEY && process.env.OTP_FROM_EMAIL) {
-    const response = await fetch('https://api.resend.com/emails', {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${process.env.RESEND_API_KEY}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        from: process.env.OTP_FROM_EMAIL,
-        to: email,
-        subject: 'Your NextFolio verification code',
-        text: `Your NextFolio ${purpose} verification code is ${otp}. It expires in 5 minutes.`,
-      }),
-    });
+    try {
+      const response = await fetch('https://api.resend.com/emails', {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${process.env.RESEND_API_KEY}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          from: process.env.OTP_FROM_EMAIL,
+          to: email,
+          subject: 'Your NextFolio verification code',
+          text: `Your NextFolio ${purpose} verification code is ${otp}. It expires in 5 minutes.`,
+        }),
+      });
 
-    if (!response.ok) {
+      if (response.ok) {
+        return;
+      }
+
       const data = await response.json().catch(() => ({}));
-      throw new Error(data.message || 'Email provider rejected the OTP message');
+      console.warn(`[OTP Warning] Email delivery failed: ${data.message || response.statusText}`);
+    } catch (emailErr) {
+      console.warn('[OTP Warning] Email delivery error:', emailErr.message);
     }
-    return;
   }
 
   if (process.env.NODE_ENV === 'production') {
-    throw new Error('OTP email delivery is not configured');
+    throw new Error('OTP email delivery failed and no fallback is available in production');
   }
 
   console.log(`[OTP] ${purpose} code for ${email}: ${otp}`);
@@ -197,7 +202,13 @@ router.post('/google', async (req, res) => {
     
     if (!response.ok) throw new Error('Failed to fetch user info from Google');
     
-    const { email, name, picture, sub } = await response.json();
+    const googleProfile = await response.json();
+    const email = normalizeEmail(googleProfile.email);
+    const name = (googleProfile.name || email.split('@')[0]).trim();
+    const { picture, sub, email_verified: emailVerified } = googleProfile;
+
+    if (!email) return res.status(400).json({ message: 'Google account did not provide an email address' });
+    if (!emailVerified) return res.status(401).json({ message: 'Google account email is not verified' });
     
     // Check if user exists
     let user = await User.findOne({ where: { email } });
@@ -207,6 +218,11 @@ router.post('/google', async (req, res) => {
       const hashedPassword = await bcrypt.hash(sub + Date.now().toString(), 10);
       user = await User.create({ name, email, password: hashedPassword, profileImage: picture });
       await PersonalInfo.create({ UserId: user.id, fullName: name });
+    } else if ((!user.profileImage && picture) || (user.name !== name && name)) {
+      await user.update({
+        name: user.name || name,
+        profileImage: user.profileImage || picture,
+      });
     }
 
     res.json(createTokenResponse(user));

@@ -39,3 +39,11 @@ coverage/
 *.tmp
 temp-cli-portfolio/
 cli-portlio/
+
+# Python cache
+__pycache__/
+*.py[cod]
+
+# SQLite runtime sidecars
+*.sqlite-shm
+*.sqlite-wal

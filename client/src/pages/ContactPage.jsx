@@ -9,7 +9,6 @@ import { normalizeResumeForPortfolio } from '../features/themes/resumeThemeData'
 const CONTACT_DETAILS = {
   name: 'Rishi Singh Shandilya',
   email: 'rishisingh.shandilya@gmail.com',
-  phone: '9939587249',
   github: 'github.com/Rishi472',
   linkedin: 'linkedin.com/in/rishisinghshandilya',
 };

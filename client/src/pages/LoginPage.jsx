@@ -7,7 +7,7 @@ import Button from '../components/Button';
 import Input from '../components/Input';
 import logo from '../assets/NextFolioLogo.png';
 import { API_URL, getApiErrorMessage } from '../lib/api';
-import { HAS_GOOGLE_OAUTH, getGoogleAuthErrorMessage } from '../lib/googleAuth';
+import { HAS_GOOGLE_OAUTH, getGoogleAuthErrorMessage, getGoogleLoginPreflightError } from '../lib/googleAuth';
 
 export default function LoginPage() {
   const navigate = useNavigate();
@@ -86,7 +86,11 @@ export default function LoginPage() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || 'Failed to send OTP');
       setOtpSent(true);
-      setOtpMessage(data.message || 'OTP sent to your email. Please check your inbox.');
+      setOtpMessage(
+        data.devOtp
+          ? `${data.message} (Development OTP: ${data.devOtp})`
+          : data.message || 'OTP sent to your email. Please check your inbox.'
+      );
     } catch (err) {
       setError(err.message);
     } finally {
@@ -127,7 +131,12 @@ export default function LoginPage() {
   });
 
   const startGoogleLogin = () => {
-    if (!HAS_GOOGLE_OAUTH) return;
+    const preflightError = getGoogleLoginPreflightError();
+    if (preflightError) {
+      setError(preflightError);
+      return;
+    }
+
     handleGoogleLogin();
   };
 

@@ -5,7 +5,7 @@ import { useUIStore, useResumeStore } from '../store';
 import Button from './Button';
 import Input from './Input';
 import { API_URL, getApiErrorMessage } from '../lib/api';
-import { HAS_GOOGLE_OAUTH, getGoogleAuthErrorMessage } from '../lib/googleAuth';
+import { HAS_GOOGLE_OAUTH, getGoogleAuthErrorMessage, getGoogleLoginPreflightError } from '../lib/googleAuth';
 
 export default function AuthModal() {
   const { showAuthModal, setShowAuthModal } = useUIStore();
@@ -80,7 +80,11 @@ export default function AuthModal() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || 'Failed to send OTP');
       setOtpSent(true);
-      setOtpMessage(data.message || 'OTP sent to your email. Please check your inbox.');
+      setOtpMessage(
+        data.devOtp
+          ? `${data.message} (Development OTP: ${data.devOtp})`
+          : data.message || 'OTP sent to your email. Please check your inbox.'
+      );
     } catch (err) {
       setError(err.message);
     } finally {
@@ -122,7 +126,12 @@ export default function AuthModal() {
   });
 
   const startGoogleLogin = () => {
-    if (!HAS_GOOGLE_OAUTH) return;
+    const preflightError = getGoogleLoginPreflightError();
+    if (preflightError) {
+      setError(preflightError);
+      return;
+    }
+
     handleGoogleLogin();
   };
 
